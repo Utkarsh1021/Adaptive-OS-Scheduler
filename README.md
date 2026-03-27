@@ -26,7 +26,7 @@ Tailwind CSS: Provides styling for the user interface.
 JavaScript: Implements the scheduling logic and interactive features.
 
 Live Demo
-[Check the Live Demo!](https://anjali11s.github.io/OsProject/)
+[Check the Live Demo!]()
 
 Breakdown of Files and Directories
 index.html → This is the landing page, containing the home interface and key features.
