@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Adaptive OS Scheduler</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .task-box {
+      background: #faf5f5;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    /* .task-box:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    } */
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+   
+    #ganttContainer {
+      margin-top: 20px;
+      text-align: center;
+      overflow-x: auto;
+      width: 100%;
+      border-radius: 10px;
+    }
+    #ganttChart {
+      height: 200px;
+    }
+    
+    #ganttContainer::-webkit-scrollbar {
+      height: 8px;
+    }
+    #ganttContainer::-webkit-scrollbar-track {
+      background: #f4f4f4;
+      border-radius: 10px;
+    }
+    #ganttContainer::-webkit-scrollbar-thumb {
+      background: #cccccc;
+      border-radius: 10px;
+    }
+    .delete-btn {
+    background: rgba(255, 75, 92, 0.2);
+    color: #ff4b5c;
+    border: 1.5px solid rgba(237, 96, 110, 0.5);
+    padding: 4px 8px; 
+    margin: 8px;
+    width: 100px;
+    /* margin-left: 10px; */
+    border-radius: 8px; 
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+    backdrop-filter: blur(5px);
+    box-shadow: 1px 2px 6px rgba(255, 75, 92, 0.25);
+}
+
+.delete-btn:hover {
+    background: rgba(255, 75, 92, 0.35);
+    color: white;
+    border: 1.5px solid rgba(255, 75, 92, 0.7);
+    box-shadow: 2px 3px 8px rgba(255, 75, 92, 0.4);
+    transform: scale(1.05); 
+}
+
+.delete-btn:active {
+    transform: scale(0.95);
+    box-shadow: 1px 2px 6px rgba(255, 75, 92, 0.5);
+}
+.edit-btn {
+    
+    background: rgb(71, 255, 71);
+    color: green;
+    border: 1.5px solid green;
+    padding: 4px 8px;  
+    margin: 8px;
+    width: 100px;
+   
+    border-radius: 8px; 
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+    backdrop-filter: blur(5px);
+    box-shadow: 1px 2px 6px rgba(75, 255, 92, 0.25);
+}
+
+.edit-btn:hover {
+    background: green;
+    color: white;
+    border: 1.5px solid rgba(75, 255, 92, 0.7);
+    box-shadow: 2px 3px 8px rgba(75, 255, 92, 0.4);
+    transform: scale(1.05); 
+}
+
+.edit-btn:active {
+    transform: scale(0.95);
+    box-shadow: 1px 2px 6px rgba(75, 255, 92, 0.5);
+}
+
+.home-btn {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  background: rgba(126, 174, 245, 0.2);
+  color: white;
+  border: 1.5px solid rgba(59, 130, 246, 0.5);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.2s ease-in-out;
+  backdrop-filter: blur(5px);
+  box-shadow: 1px 2px 6px rgba(59, 130, 246, 0.25);
+}
+
+.home-btn:hover {
+  background: rgba(59, 130, 246, 0.35);
+  color: white;
+  border: 1.5px solid rgba(59, 130, 246, 0.7);
+  box-shadow: 2px 3px 8px rgba(59, 130, 246, 0.4);
+  transform: scale(1.05);
+}
+
+.home-btn:active {
+  transform: scale(0.95);
+  box-shadow: 1px 2px 6px rgba(59, 130, 246, 0.5);
+}
+    
+  </style>
+</head>
+<body class="bg-blue-100 text-gray-900">
+  <header class="bg-blue-600 text-white p-4 text-center text-2xl font-bold relative">
+    Adaptive OS Scheduler (EDF & RMS)
+    <a href="index.html" class="home-btn">Back to Home</a>
+  </header>
+
+  <main class="container mx-auto p-6">
+    <h1 class="text-3xl font-semibold text-center mb-4">Real-Time Scheduler</h1>
+    <p class="text-lg text-center">Dynamically adjusts priorities using EDF and RMS scheduling.</p>
+    
+    
+    <div class="mt-6 bg-white shadow-lg p-6 rounded-lg max-w-md mx-auto">
+      <h2 class="text-2xl font-semibold text-center">Add Task</h2>
+      <input id="taskId" type="number" placeholder="Task ID" class="border p-2 m-2 rounded w-full" />
+      <input id="executionTime" type="number" step="0.1" placeholder="Execution Time (ms)" class="border p-2 m-2 rounded w-full" />
+      <input id="deadline" type="number" placeholder="Deadline (ms) [Optional for RMS]" class="border p-2 m-2 rounded w-full" />
+      <input id="period" type="number" placeholder="Period (ms)" class="border p-2 m-2 rounded w-full" />
+      <button onclick="addTask()" class="mt-2 bg-green-500 text-white px-4 py-2 rounded w-full hover:bg-green-600">
+        Add Task
+      </button>
+      <button onclick="clearTasks()" class="mt-2 bg-red-500 text-white px-4 py-2 rounded w-full hover:bg-red-600">
+        Clear Tasks
+      </button>
+    </div>
+
+    
+    <div class="mt-6 bg-white shadow-lg p-6 rounded-lg max-w-md mx-auto">
+      <button onclick="runScheduler('edf')" class="bg-blue-500 text-white px-6 py-2 rounded-lg w-full hover:bg-blue-600 mb-2">
+        Run EDF Scheduler
+      </button>
+      <button onclick="runScheduler('rms')" class="bg-purple-500 text-white px-6 py-2 rounded-lg w-full hover:bg-purple-600">
+        Run RMS Scheduler
+      </button>
+    </div>
+
+    <div class="mt-6 bg-white shadow-lg p-6 rounded-lg max-w-md mx-auto">
+      <h2 class="text-2xl font-semibold text-center">Task Queue</h2>
+      <div id="taskList" class="mt-4"></div>
+    </div>
+
+    <div class="mt-6 bg-gray-800 shadow-lg text-white p-4 rounded-lg max-w-lg mx-auto">
+      <h2 class="text-xl text-center">Scheduler Output</h2>
+      <pre id="output" class="bg-gray-900 text-green-400 p-4 mt-4 rounded-lg overflow-auto h-48"></pre>
+    </div>
+    
+    <h2 class="text-xl font-semibold text-center mt-6">Gantt Chart</h2>
+    <div id="ganttContainer" class="max-w-lg bg-gray-300 rounded-lg shadow-lg mx-auto">
+      <div class="canvas-wrapper">
+        <canvas id="ganttChart" width="1200" height="200"></canvas>
+      </div>
+    </div>
+  </main>
+  
+  <footer class="bg-gray-800 text-white text-center p-3 mt-6">
+    &copy; 2025 Adaptive OS Scheduler | All Rights Reserved
+  </footer>
+
+  <script>
+    let tasks = [];
+    let lastEvents = []; 
+
+    
+    function gcd(a, b) {
+      return b === 0 ? a : gcd(b, a % b);
+    }
+    
+    function lcm(a, b) {
+      return (a * b) / gcd(a, b);
+    }
+    
+    function getHyperperiod() {
+      if (tasks.length === 0) return 0;
+      let hyper = tasks[0].period;
+      for (let i = 1; i < tasks.length; i++) {
+        hyper = lcm(hyper, tasks[i].period);
+      }
+      return hyper;
+    }
+    
+    function deleteTask(event) {
+        event.target.parentElement.remove();
+        let taskId = event.target.parentElement.getAttribute("data-task-id");
+        tasks = tasks.filter(task => task.id != taskId); // Remove from tasks array
+    }
+
+    function clearTasks() {
+        document.getElementById("taskList").innerHTML = "";
+        tasks = [];
+        lastEvents = [];
+        let canvas = document.getElementById("ganttChart");
+        let ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function addTask() {
+        const id = document.getElementById("taskId").value;
+        const exec = parseFloat(document.getElementById("executionTime").value);
+        const deadlineInput = document.getElementById("deadline").value;
+        const period = parseInt(document.getElementById("period").value);
+    
+        if (!id || isNaN(exec) || isNaN(period)) {
+            alert("Please fill Task ID, Execution Time, and Period fields.");
+            return;
+        }
+    
+        let deadline = deadlineInput ? parseInt(deadlineInput) : period;
+        const task = {
+            id: parseInt(id),
+            executionTime: exec,
+            deadline: deadline,
+            period: period,
+            remaining: exec,
+            nextArrival: 0,
+            nextDeadline: deadline
+        };
+        tasks.push(task);
+
+        // Task container
+        const taskDiv = document.createElement("div");
+        taskDiv.classList.add("task-box");
+        taskDiv.setAttribute("data-task-id", task.id); 
+        taskDiv.innerHTML = `Task ${task.id} - Execution: ${task.executionTime}ms - Deadline: ${task.deadline}ms - Period: ${task.period}`;
+    
+        
+        const editBtn = document.createElement("button");
+        editBtn.innerText = "Edit";
+        editBtn.classList.add("edit-btn");
+
+        
+        editBtn.onclick = function () {
+            const newExec = prompt("Enter new execution time", task.executionTime);
+            const newDeadline = prompt("Enter new deadline", task.deadline);
+            const newPeriod = prompt("Enter new period", task.period);
+
+            if (newExec && newDeadline && newPeriod) {
+                task.executionTime = parseFloat(newExec);
+                task.deadline = parseInt(newDeadline);
+                task.period = parseInt(newPeriod);
+                task.remaining = task.executionTime;
+                
+                // Update the task display
+                taskDiv.innerHTML = `Task ${task.id} - Execution: ${task.executionTime}ms - Deadline: ${task.deadline}ms - Period: ${task.period}`;
+                taskDiv.appendChild(editBtn);
+                taskDiv.appendChild(deleteBtn);
+            }
+        };
+
+       
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerText = "Delete";
+        deleteBtn.classList.add("delete-btn");
+    
+        
+        deleteBtn.onclick = function () {
+            taskDiv.remove(); 
+            tasks = tasks.filter(t => t.id !== task.id);
+        };
+
+       
+        taskDiv.appendChild(editBtn);
+        taskDiv.appendChild(deleteBtn);
+        document.getElementById("taskList").appendChild(taskDiv);
+
+        
+        document.getElementById("taskId").value = "";
+        document.getElementById("executionTime").value = "";
+        document.getElementById("deadline").value = "";
+        document.getElementById("period").value = "";
+    }
+
+    
+    function drawGanttChart(events, hyperperiod) {
+        const canvas = document.getElementById("ganttChart");
+        const ctx = canvas.getContext("2d");
+
+        
+        const containerWidth = document.getElementById("ganttContainer").offsetWidth;
+        canvas.width = Math.max(containerWidth, 1200);
+        canvas.height = 200;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        
+        const marginLeft = 30;
+        const marginRight = 10;
+        const usableWidth = canvas.width - marginLeft - marginRight;
+        const scale = usableWidth / hyperperiod;
+        const barHeight = 40;
+        const y = (canvas.height - barHeight) / 2;
+        
+        
+        const colors = { "idle": "#cccccc" };
+        events.forEach(ev => {
+            if (ev.label !== "idle" && !colors[ev.label]) {
+                colors[ev.label] = '#' + Math.floor(Math.random() * 16777215).toString(16);
+            }
+        });
+        
+        events.forEach(ev => {
+            const xStart = marginLeft + ev.start * scale;
+            const width = (ev.end - ev.start) * scale;
+            
+            ctx.fillStyle = colors[ev.label] || "#000000";
+            ctx.fillRect(xStart, y, width, barHeight);
+            
+            ctx.strokeStyle = "#000";
+            ctx.strokeRect(xStart, y, width, barHeight);
+            
+            ctx.fillStyle = "#000";
+            ctx.font = "14px Arial";
+            ctx.fillText(ev.label, xStart + 5, y + barHeight / 2 + 5);
+        });
+        
+        // the time axis.
+        ctx.fillStyle = "#000";
+        ctx.font = "12px Arial";
+        const axisY = y + barHeight;
+        ctx.beginPath();
+        ctx.moveTo(marginLeft, axisY);
+        ctx.lineTo(canvas.width - marginRight, axisY);
+        ctx.strokeStyle = "#333";
+        ctx.stroke();
+        
+        for (let t = 0; t <= hyperperiod; t++) {
+            const xPos = marginLeft + t * scale;
+            ctx.beginPath();
+            ctx.moveTo(xPos, axisY);
+            ctx.lineTo(xPos, axisY + 5);
+            ctx.stroke();
+            ctx.fillText(t.toString(), xPos - 3, axisY + 18);
+        }
+    }
+    
+    function runScheduler(schedulerType) {
+        const hyperperiod = getHyperperiod();
+        if (hyperperiod === 0) {
+            alert("No tasks available to schedule!");
+            return;
+        }
+        
+        let simTasks = tasks.map(task => ({ ...task }));
+        
+        // For RMS, set deadlines equal to periods.
+        if (schedulerType === "rms") {
+            simTasks.forEach(task => {
+                task.deadline = task.period;
+                task.nextDeadline = task.period;
+            });
+        }
+        
+        let currentTime = 0;
+        let events = [];
+        let currentLabel = "";
+        let eventStart = currentTime;
+        
+        while (currentTime < hyperperiod) {
+            let available = simTasks.filter(task =>
+                currentTime >= task.nextArrival &&
+                currentTime < task.nextDeadline &&
+                task.remaining > 0
+            );
+            
+            available.sort((a, b) => a.nextDeadline - b.nextDeadline);
+            let runningTask = available.length > 0 ? available[0] : null;
+            let newLabel = runningTask ? `task ${runningTask.id}` : "idle";
+            
+            if (newLabel !== currentLabel) {
+                if (currentLabel !== "") {
+                    events.push({ start: eventStart, end: currentTime, label: currentLabel });
+                }
+                currentLabel = newLabel;
+                eventStart = currentTime;
+            }
+            
+            if (!runningTask) {
+                let nextArrivals = simTasks.map(t => t.nextArrival).filter(t => t > currentTime);
+                let nextEvent = nextArrivals.length ? Math.min(...nextArrivals) : hyperperiod;
+                currentTime = nextEvent;
+                continue;
+            }
+            
+            let finishTime = currentTime + runningTask.remaining;
+            let nextArrivalEvent = Infinity;
+            simTasks.forEach(t => {
+                if (t.nextArrival > currentTime && t.nextArrival < finishTime) {
+                    nextArrivalEvent = Math.min(nextArrivalEvent, t.nextArrival);
+                }
+            });
+            
+            let nextEventTime = Math.min(finishTime, nextArrivalEvent);
+            if (nextEventTime > hyperperiod) {
+                nextEventTime = hyperperiod;
+            }
+            
+            let delta = nextEventTime - currentTime;
+            runningTask.remaining -= delta;
+            currentTime = nextEventTime;
+            
+            if (runningTask.remaining <= 1e-9) {
+                runningTask.remaining = runningTask.executionTime;
+                runningTask.nextArrival += runningTask.period;
+                runningTask.nextDeadline = (schedulerType === "edf")
+                    ? runningTask.nextArrival + runningTask.deadline
+                    : runningTask.nextArrival + runningTask.period;
+            }
+        }
+        
+        if (currentTime > eventStart) {
+            events.push({ start: eventStart, end: hyperperiod, label: currentLabel });
+        }
+        
+        let log = `${schedulerType.toUpperCase()} Scheduling Output (Hyperperiod: ${hyperperiod}ms):\n`;
+        events.forEach(ev => {
+            log += `time ${ev.start.toFixed(1)} to ${ev.end.toFixed(1)}: ${ev.label}\n`;
+        });
+        document.getElementById("output").textContent = log;
+        
+        lastEvents = events;
+        drawGanttChart(events, hyperperiod);
+    }
+
+    window.addEventListener('resize', () => {
+        const hyperperiod = getHyperperiod();
+        if (hyperperiod && lastEvents.length > 0) {
+            drawGanttChart(lastEvents, hyperperiod);
+        }
+    });
+</script>
+
+  
+</body>
+</html>
