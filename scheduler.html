@@ -166,8 +166,11 @@
       <button onclick="runScheduler('edf')" class="bg-blue-500 text-white px-6 py-2 rounded-lg w-full hover:bg-blue-600 mb-2">
         Run EDF Scheduler
       </button>
-      <button onclick="runScheduler('rms')" class="bg-purple-500 text-white px-6 py-2 rounded-lg w-full hover:bg-purple-600">
+      <button onclick="runScheduler('rms')" class="bg-purple-500 text-white px-6 py-2 rounded-lg w-full hover:bg-purple-600 mb-2">
         Run RMS Scheduler
+      </button>
+      <button onclick="runComparison()" class="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-lg w-full hover:from-blue-600 hover:to-purple-600">
+        EDF vs RMS
       </button>
     </div>
 
@@ -176,15 +179,93 @@
       <div id="taskList" class="mt-4"></div>
     </div>
 
-    <div class="mt-6 bg-gray-800 shadow-lg text-white p-4 rounded-lg max-w-lg mx-auto">
-      <h2 class="text-xl text-center">Scheduler Output</h2>
-      <pre id="output" class="bg-gray-900 text-green-400 p-4 mt-4 rounded-lg overflow-auto h-48"></pre>
+    <!-- Single Scheduler View -->
+    <div id="singleView">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto mt-6">
+        <!-- Scheduler Output -->
+        <div class="bg-gray-800 shadow-lg text-white p-4 rounded-lg">
+          <h2 class="text-xl text-center">Scheduler Output</h2>
+          <pre id="output" class="bg-gray-900 text-green-400 p-4 mt-4 rounded-lg overflow-auto h-48"></pre>
+        </div>
+        
+        <!-- Pie Chart -->
+        <div class="bg-white shadow-lg p-4 rounded-lg">
+          <h2 class="text-xl text-center font-semibold">Task Allocation (Pie Chart)</h2>
+          <div class="flex justify-center items-center mt-2">
+            <canvas id="pieChart" width="300" height="300"></canvas>
+          </div>
+          <div class="text-center mt-2">
+            <span class="text-sm font-semibold">Time: <span id="currentTime">0</span>ms</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Bar Graph -->
+      <div class="bg-white shadow-lg p-4 rounded-lg max-w-6xl mx-auto mt-6">
+        <h2 class="text-xl text-center font-semibold">Task Allocation (Bar Graph)</h2>
+        <div class="flex justify-center items-center mt-4">
+          <canvas id="barChart" width="800" height="300"></canvas>
+        </div>
+      </div>
+      
+      <h2 class="text-xl font-semibold text-center mt-6">Gantt Chart</h2>
+      <div id="ganttContainer" class="max-w-6xl bg-gray-300 rounded-lg shadow-lg mx-auto">
+        <div class="canvas-wrapper">
+          <canvas id="ganttChart" width="1200" height="200"></canvas>
+        </div>
+      </div>
     </div>
-    
-    <h2 class="text-xl font-semibold text-center mt-6">Gantt Chart</h2>
-    <div id="ganttContainer" class="max-w-lg bg-gray-300 rounded-lg shadow-lg mx-auto">
-      <div class="canvas-wrapper">
-        <canvas id="ganttChart" width="1200" height="200"></canvas>
+
+    <!-- Comparison View (Hidden by default) -->
+    <div id="comparisonView" class="mt-6 hidden">
+      <h2 class="text-2xl font-semibold text-center mb-4">EDF vs RMS Comparison</h2>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+        <!-- EDF Section -->
+        <div class="bg-white shadow-lg p-4 rounded-lg">
+          <h3 class="text-xl font-semibold text-blue-600 text-center mb-2">EDF Scheduler</h3>
+          <div class="bg-gray-800 text-white p-3 rounded-lg">
+            <pre id="outputEDF" class="bg-gray-900 text-green-400 p-3 rounded-lg overflow-auto h-40 text-sm"></pre>
+          </div>
+          <h4 class="text-lg font-semibold text-center mt-4 mb-2">Gantt Chart</h4>
+          <div class="bg-gray-300 rounded-lg shadow-lg overflow-x-auto">
+            <canvas id="ganttChartEDF" width="600" height="150"></canvas>
+          </div>
+          <h4 class="text-lg font-semibold text-center mt-4 mb-2">Task Allocation (Pie)</h4>
+          <div class="flex justify-center">
+            <canvas id="pieChartEDF" width="250" height="250"></canvas>
+          </div>
+          <div class="text-center mt-2">
+            <span class="text-sm font-semibold">Time: <span id="currentTimeEDF">0</span>ms</span>
+          </div>
+          <h4 class="text-lg font-semibold text-center mt-4 mb-2">Task Allocation (Bar)</h4>
+          <div class="flex justify-center">
+            <canvas id="barChartEDF" width="500" height="200"></canvas>
+          </div>
+        </div>
+
+        <!-- RMS Section -->
+        <div class="bg-white shadow-lg p-4 rounded-lg">
+          <h3 class="text-xl font-semibold text-purple-600 text-center mb-2">RMS Scheduler</h3>
+          <div class="bg-gray-800 text-white p-3 rounded-lg">
+            <pre id="outputRMS" class="bg-gray-900 text-green-400 p-3 rounded-lg overflow-auto h-40 text-sm"></pre>
+          </div>
+          <h4 class="text-lg font-semibold text-center mt-4 mb-2">Gantt Chart</h4>
+          <div class="bg-gray-300 rounded-lg shadow-lg overflow-x-auto">
+            <canvas id="ganttChartRMS" width="600" height="150"></canvas>
+          </div>
+          <h4 class="text-lg font-semibold text-center mt-4 mb-2">Task Allocation (Pie)</h4>
+          <div class="flex justify-center">
+            <canvas id="pieChartRMS" width="250" height="250"></canvas>
+          </div>
+          <div class="text-center mt-2">
+            <span class="text-sm font-semibold">Time: <span id="currentTimeRMS">0</span>ms</span>
+          </div>
+          <h4 class="text-lg font-semibold text-center mt-4 mb-2">Task Allocation (Bar)</h4>
+          <div class="flex justify-center">
+            <canvas id="barChartRMS" width="500" height="200"></canvas>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -196,6 +277,9 @@
   <script>
     let tasks = [];
     let lastEvents = []; 
+    let animationInterval = null;
+    let currentAnimationTime = 0;
+    let hyperperiodValue = 0; 
 
     
     function gcd(a, b) {
@@ -375,16 +459,24 @@
             alert("No tasks available to schedule!");
             return;
         }
+
+        // Show single view, hide comparison view
+        document.getElementById("singleView").style.display = "block";
+        document.getElementById("comparisonView").classList.add("hidden");
         
-        let simTasks = tasks.map(task => ({ ...task }));
+        // Stop any existing animation
+        stopPieChartAnimation();
         
-        // For RMS, set deadlines equal to periods.
-        if (schedulerType === "rms") {
-            simTasks.forEach(task => {
-                task.deadline = task.period;
-                task.nextDeadline = task.period;
-            });
-        }
+        // Deep copy tasks to avoid interference
+        let simTasks = tasks.map(task => ({
+            id: task.id,
+            executionTime: task.executionTime,
+            deadline: task.deadline,
+            period: task.period,
+            remaining: task.executionTime,
+            nextArrival: 0,
+            nextDeadline: task.deadline
+        }));
         
         let currentTime = 0;
         let events = [];
@@ -398,7 +490,21 @@
                 task.remaining > 0
             );
             
-            available.sort((a, b) => a.nextDeadline - b.nextDeadline);
+            // KEY DIFFERENCE: RMS sorts by period (fixed priority), EDF sorts by deadline (dynamic priority)
+            if (schedulerType === "rms") {
+                // RMS: Shorter period = Higher priority (fixed)
+                available.sort((a, b) => {
+                    if (a.period !== b.period) return a.period - b.period;
+                    return a.id - b.id; // Tie-breaker by task ID
+                });
+            } else {
+                // EDF: Earlier deadline = Higher priority (dynamic)
+                available.sort((a, b) => {
+                    if (a.nextDeadline !== b.nextDeadline) return a.nextDeadline - b.nextDeadline;
+                    return a.id - b.id; // Tie-breaker by task ID
+                });
+            }
+            
             let runningTask = available.length > 0 ? available[0] : null;
             let newLabel = runningTask ? `task ${runningTask.id}` : "idle";
             
@@ -437,9 +543,7 @@
             if (runningTask.remaining <= 1e-9) {
                 runningTask.remaining = runningTask.executionTime;
                 runningTask.nextArrival += runningTask.period;
-                runningTask.nextDeadline = (schedulerType === "edf")
-                    ? runningTask.nextArrival + runningTask.deadline
-                    : runningTask.nextArrival + runningTask.period;
+                runningTask.nextDeadline = runningTask.nextArrival + runningTask.deadline;
             }
         }
         
@@ -448,6 +552,11 @@
         }
         
         let log = `${schedulerType.toUpperCase()} Scheduling Output (Hyperperiod: ${hyperperiod}ms):\n`;
+        if (schedulerType === "rms") {
+            log += "Priority: Shorter Period = Higher Priority\n";
+        } else {
+            log += "Priority: Earlier Deadline = Higher Priority\n";
+        }
         events.forEach(ev => {
             log += `time ${ev.start.toFixed(1)} to ${ev.end.toFixed(1)}: ${ev.label}\n`;
         });
@@ -455,6 +564,10 @@
         
         lastEvents = events;
         drawGanttChart(events, hyperperiod);
+        
+        // Start pie chart and bar chart animation
+        hyperperiodValue = hyperperiod;
+        startPieChartAnimation(events, hyperperiod, 'pieChart', 'currentTime');
     }
 
     window.addEventListener('resize', () => {
@@ -463,6 +576,521 @@
             drawGanttChart(lastEvents, hyperperiod);
         }
     });
+
+    function runComparison() {
+        const hyperperiod = getHyperperiod();
+        if (hyperperiod === 0) {
+            alert("No tasks available to schedule!");
+            return;
+        }
+
+        // Hide single view, show comparison view
+        document.getElementById("singleView").style.display = "none";
+        document.getElementById("comparisonView").classList.remove("hidden");
+
+        // Stop any existing animation
+        stopPieChartAnimation();
+
+        // Run EDF
+        const edfResults = runSchedulerComparison('edf');
+        document.getElementById("outputEDF").textContent = edfResults.log;
+        drawGanttChartComparison(edfResults.events, hyperperiod, 'ganttChartEDF');
+        
+        // Run RMS
+        const rmsResults = runSchedulerComparison('rms');
+        document.getElementById("outputRMS").textContent = rmsResults.log;
+        drawGanttChartComparison(rmsResults.events, hyperperiod, 'ganttChartRMS');
+        
+        // Start synchronized pie chart animations
+        startComparisonPieChartAnimation(edfResults.events, rmsResults.events, hyperperiod);
+    }
+
+    function startComparisonPieChartAnimation(edfEvents, rmsEvents, hyperperiod) {
+        // Clear any existing animation
+        if (animationInterval) {
+            clearInterval(animationInterval);
+        }
+        
+        currentAnimationTime = 0;
+        
+        // Draw initial state
+        drawPieChart(edfEvents, 0, 'pieChartEDF');
+        drawPieChart(rmsEvents, 0, 'pieChartRMS');
+        document.getElementById('currentTimeEDF').textContent = "0";
+        document.getElementById('currentTimeRMS').textContent = "0";
+        
+        // Animate through the hyperperiod
+        animationInterval = setInterval(() => {
+            currentAnimationTime += 1;
+            
+            if (currentAnimationTime > hyperperiod) {
+                currentAnimationTime = 0; // Loop back
+            }
+            
+            drawPieChart(edfEvents, currentAnimationTime, 'pieChartEDF');
+            drawPieChart(rmsEvents, currentAnimationTime, 'pieChartRMS');
+            document.getElementById('currentTimeEDF').textContent = currentAnimationTime;
+            document.getElementById('currentTimeRMS').textContent = currentAnimationTime;
+        }, 1000); // Update every second
+    }
+
+    function runSchedulerComparison(schedulerType) {
+        const hyperperiod = getHyperperiod();
+        
+        // Deep copy tasks to avoid interference
+        let simTasks = tasks.map(task => ({
+            id: task.id,
+            executionTime: task.executionTime,
+            deadline: task.deadline,
+            period: task.period,
+            remaining: task.executionTime,
+            nextArrival: 0,
+            nextDeadline: task.deadline
+        }));
+        
+        let currentTime = 0;
+        let events = [];
+        let currentLabel = "";
+        let eventStart = currentTime;
+        
+        while (currentTime < hyperperiod) {
+            let available = simTasks.filter(task =>
+                currentTime >= task.nextArrival &&
+                currentTime < task.nextDeadline &&
+                task.remaining > 0
+            );
+            
+            // KEY DIFFERENCE: RMS sorts by period (fixed priority), EDF sorts by deadline (dynamic priority)
+            if (schedulerType === "rms") {
+                // RMS: Shorter period = Higher priority (fixed)
+                available.sort((a, b) => {
+                    if (a.period !== b.period) return a.period - b.period;
+                    return a.id - b.id; // Tie-breaker by task ID
+                });
+            } else {
+                // EDF: Earlier deadline = Higher priority (dynamic)
+                available.sort((a, b) => {
+                    if (a.nextDeadline !== b.nextDeadline) return a.nextDeadline - b.nextDeadline;
+                    return a.id - b.id; // Tie-breaker by task ID
+                });
+            }
+            
+            let runningTask = available.length > 0 ? available[0] : null;
+            let newLabel = runningTask ? `T${runningTask.id}` : "idle";
+            
+            if (newLabel !== currentLabel) {
+                if (currentLabel !== "") {
+                    events.push({ start: eventStart, end: currentTime, label: currentLabel });
+                }
+                currentLabel = newLabel;
+                eventStart = currentTime;
+            }
+            
+            if (!runningTask) {
+                let nextArrivals = simTasks.map(t => t.nextArrival).filter(t => t > currentTime);
+                let nextEvent = nextArrivals.length ? Math.min(...nextArrivals) : hyperperiod;
+                currentTime = nextEvent;
+                continue;
+            }
+            
+            let finishTime = currentTime + runningTask.remaining;
+            let nextArrivalEvent = Infinity;
+            simTasks.forEach(t => {
+                if (t.nextArrival > currentTime && t.nextArrival < finishTime) {
+                    nextArrivalEvent = Math.min(nextArrivalEvent, t.nextArrival);
+                }
+            });
+            
+            let nextEventTime = Math.min(finishTime, nextArrivalEvent);
+            if (nextEventTime > hyperperiod) {
+                nextEventTime = hyperperiod;
+            }
+            
+            let delta = nextEventTime - currentTime;
+            runningTask.remaining -= delta;
+            currentTime = nextEventTime;
+            
+            if (runningTask.remaining <= 1e-9) {
+                runningTask.remaining = runningTask.executionTime;
+                runningTask.nextArrival += runningTask.period;
+                runningTask.nextDeadline = runningTask.nextArrival + runningTask.deadline;
+            }
+        }
+        
+        if (currentTime > eventStart) {
+            events.push({ start: eventStart, end: hyperperiod, label: currentLabel });
+        }
+        
+        let log = `${schedulerType.toUpperCase()} Scheduling (Hyperperiod: ${hyperperiod}ms):\n`;
+        if (schedulerType === "rms") {
+            log += "Priority: Shorter Period = Higher Priority\n";
+        } else {
+            log += "Priority: Earlier Deadline = Higher Priority\n";
+        }
+        events.forEach(ev => {
+            log += `${ev.start.toFixed(1)} to ${ev.end.toFixed(1)}: ${ev.label}\n`;
+        });
+        
+        return { events, log };
+    }
+
+    function drawGanttChartComparison(events, hyperperiod, canvasId) {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext("2d");
+        
+        canvas.width = 600;
+        canvas.height = 150;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const marginLeft = 30;
+        const marginRight = 10;
+        const usableWidth = canvas.width - marginLeft - marginRight;
+        const scale = usableWidth / hyperperiod;
+        const barHeight = 30;
+        const y = (canvas.height - barHeight) / 2;
+        
+        const colors = { "idle": "#cccccc" };
+        events.forEach(ev => {
+            if (ev.label !== "idle" && !colors[ev.label]) {
+                colors[ev.label] = '#' + Math.floor(Math.random() * 16777215).toString(16);
+            }
+        });
+        
+        events.forEach(ev => {
+            const xStart = marginLeft + ev.start * scale;
+            const width = (ev.end - ev.start) * scale;
+            
+            ctx.fillStyle = colors[ev.label] || "#000000";
+            ctx.fillRect(xStart, y, width, barHeight);
+            
+            ctx.strokeStyle = "#000";
+            ctx.strokeRect(xStart, y, width, barHeight);
+            
+            ctx.fillStyle = "#000";
+            ctx.font = "12px Arial";
+            ctx.fillText(ev.label, xStart + 3, y + barHeight / 2 + 4);
+        });
+        
+        ctx.fillStyle = "#000";
+        ctx.font = "10px Arial";
+        const axisY = y + barHeight;
+        ctx.beginPath();
+        ctx.moveTo(marginLeft, axisY);
+        ctx.lineTo(canvas.width - marginRight, axisY);
+        ctx.strokeStyle = "#333";
+        ctx.stroke();
+        
+        const step = Math.ceil(hyperperiod / 10);
+        for (let t = 0; t <= hyperperiod; t += step) {
+            const xPos = marginLeft + t * scale;
+            ctx.beginPath();
+            ctx.moveTo(xPos, axisY);
+            ctx.lineTo(xPos, axisY + 5);
+            ctx.stroke();
+            ctx.fillText(t.toString(), xPos - 3, axisY + 15);
+        }
+    }
+
+    function drawPieChart(events, currentTime, canvasId) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext("2d");
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = Math.min(centerX, centerY) - 20;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Find which task is running at currentTime
+        let currentTask = null;
+        for (let ev of events) {
+            if (currentTime >= ev.start && currentTime < ev.end) {
+                currentTask = ev.label;
+                break;
+            }
+        }
+        
+        // Calculate total time for each task
+        const taskTimes = {};
+        events.forEach(ev => {
+            const duration = ev.end - ev.start;
+            if (!taskTimes[ev.label]) {
+                taskTimes[ev.label] = 0;
+            }
+            taskTimes[ev.label] += duration;
+        });
+        
+        const totalTime = Object.values(taskTimes).reduce((a, b) => a + b, 0);
+        
+        // Generate colors
+        const colors = {};
+        const taskLabels = Object.keys(taskTimes);
+        taskLabels.forEach((label, index) => {
+            if (label === "idle") {
+                colors[label] = "#cccccc";
+            } else {
+                const hue = (index * 360 / (taskLabels.length - 1)) % 360;
+                colors[label] = `hsl(${hue}, 70%, 60%)`;
+            }
+        });
+        
+        // Draw pie slices
+        let startAngle = -Math.PI / 2;
+        taskLabels.forEach(label => {
+            const sliceAngle = (taskTimes[label] / totalTime) * 2 * Math.PI;
+            
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+            ctx.closePath();
+            
+            // Highlight current task
+            if (label === currentTask) {
+                ctx.fillStyle = colors[label];
+                ctx.fill();
+                ctx.strokeStyle = "#000";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = colors[label];
+                ctx.globalAlpha = 0.6;
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+            
+            // Draw label
+            const midAngle = startAngle + sliceAngle / 2;
+            const labelX = centerX + Math.cos(midAngle) * (radius * 0.7);
+            const labelY = centerY + Math.sin(midAngle) * (radius * 0.7);
+            
+            ctx.fillStyle = "#000";
+            ctx.font = "bold 12px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(label, labelX, labelY);
+            
+            startAngle += sliceAngle;
+        });
+        
+        // Draw legend
+        let legendY = 10;
+        taskLabels.forEach(label => {
+            const percentage = ((taskTimes[label] / totalTime) * 100).toFixed(1);
+            
+            ctx.fillStyle = colors[label];
+            ctx.fillRect(10, legendY, 15, 15);
+            
+            ctx.fillStyle = "#000";
+            ctx.font = "11px Arial";
+            ctx.textAlign = "left";
+            ctx.fillText(`${label}: ${percentage}%`, 30, legendY + 11);
+            
+            legendY += 20;
+        });
+        
+        // Highlight current task in center
+        if (currentTask) {
+            ctx.fillStyle = "#000";
+            ctx.font = "bold 14px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(`Running: ${currentTask}`, centerX, centerY);
+        }
+    }
+
+    function drawBarChart(events, currentTime, canvasId) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
+        const padding = 60;
+        const chartHeight = height - padding * 2;
+        
+        ctx.clearRect(0, 0, width, height);
+        
+        // Find which task is running at currentTime
+        let currentTask = null;
+        for (let ev of events) {
+            if (currentTime >= ev.start && currentTime < ev.end) {
+                currentTask = ev.label;
+                break;
+            }
+        }
+        
+        // Calculate total time for each task
+        const taskTimes = {};
+        events.forEach(ev => {
+            const duration = ev.end - ev.start;
+            if (!taskTimes[ev.label]) {
+                taskTimes[ev.label] = 0;
+            }
+            taskTimes[ev.label] += duration;
+        });
+        
+        const totalTime = Object.values(taskTimes).reduce((a, b) => a + b, 0);
+        const taskLabels = Object.keys(taskTimes);
+        const barWidth = (width - padding * 2) / taskLabels.length - 10;
+        
+        // Generate colors
+        const colors = {};
+        taskLabels.forEach((label, index) => {
+            if (label === "idle") {
+                colors[label] = "#cccccc";
+            } else {
+                const hue = (index * 360 / (taskLabels.length - 1)) % 360;
+                colors[label] = `hsl(${hue}, 70%, 60%)`;
+            }
+        });
+        
+        // Draw axes
+        ctx.strokeStyle = "#333";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding, height - padding);
+        ctx.lineTo(width - padding, height - padding);
+        ctx.stroke();
+        
+        // Draw bars
+        taskLabels.forEach((label, index) => {
+            const barHeight = (taskTimes[label] / totalTime) * chartHeight;
+            const x = padding + index * (barWidth + 10) + 10;
+            const y = height - padding - barHeight;
+            
+            // Highlight current task
+            if (label === currentTask) {
+                ctx.fillStyle = colors[label];
+                ctx.fillRect(x, y, barWidth, barHeight);
+                ctx.strokeStyle = "#000";
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x, y, barWidth, barHeight);
+            } else {
+                ctx.fillStyle = colors[label];
+                ctx.globalAlpha = 0.6;
+                ctx.fillRect(x, y, barWidth, barHeight);
+                ctx.globalAlpha = 1.0;
+                ctx.strokeStyle = "#666";
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x, y, barWidth, barHeight);
+            }
+            
+            // Draw percentage on bar
+            const percentage = ((taskTimes[label] / totalTime) * 100).toFixed(1);
+            ctx.fillStyle = "#000";
+            ctx.font = "bold 12px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(`${percentage}%`, x + barWidth / 2, y - 5);
+            
+            // Draw label below bar
+            ctx.fillStyle = "#000";
+            ctx.font = "12px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(label, x + barWidth / 2, height - padding + 20);
+            
+            // Draw time value
+            ctx.font = "10px Arial";
+            ctx.fillText(`${taskTimes[label].toFixed(1)}ms`, x + barWidth / 2, height - padding + 35);
+        });
+        
+        // Draw Y-axis label
+        ctx.save();
+        ctx.translate(20, height / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillStyle = "#000";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("CPU Time Allocation", 0, 0);
+        ctx.restore();
+        
+        // Draw title
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 14px Arial";
+        ctx.textAlign = "center";
+        if (currentTask) {
+            ctx.fillText(`Currently Running: ${currentTask}`, width / 2, 20);
+        } else {
+            ctx.fillText("Task Allocation Overview", width / 2, 20);
+        }
+    }
+
+    function startPieChartAnimation(events, hyperperiod, canvasId, timeDisplayId) {
+        // Clear any existing animation
+        if (animationInterval) {
+            clearInterval(animationInterval);
+        }
+        
+        currentAnimationTime = 0;
+        const timeDisplay = document.getElementById(timeDisplayId);
+        
+        // Draw initial state
+        drawPieChart(events, 0, canvasId);
+        if (timeDisplay) timeDisplay.textContent = "0";
+        
+        // Store bar chart data for animation
+        window.singleBarChartData = { events, hyperperiod };
+        
+        // Animate through the hyperperiod
+        animationInterval = setInterval(() => {
+            currentAnimationTime += 1;
+            
+            if (currentAnimationTime > hyperperiod) {
+                currentAnimationTime = 0; // Loop back
+            }
+            
+            drawPieChart(events, currentAnimationTime, canvasId);
+            if (window.singleBarChartData) {
+                drawBarChart(window.singleBarChartData.events, currentAnimationTime, 'barChart');
+            }
+            if (timeDisplay) timeDisplay.textContent = currentAnimationTime;
+        }, 1000); // Update every second
+    }
+
+    function stopPieChartAnimation() {
+        if (animationInterval) {
+            clearInterval(animationInterval);
+            animationInterval = null;
+        }
+        window.singleBarChartData = null;
+    }
+
+    function startComparisonPieChartAnimation(edfEvents, rmsEvents, hyperperiod) {
+        // Clear any existing animation
+        if (animationInterval) {
+            clearInterval(animationInterval);
+        }
+        
+        currentAnimationTime = 0;
+        
+        // Draw initial state
+        drawPieChart(edfEvents, 0, 'pieChartEDF');
+        drawPieChart(rmsEvents, 0, 'pieChartRMS');
+        drawBarChart(edfEvents, 0, 'barChartEDF');
+        drawBarChart(rmsEvents, 0, 'barChartRMS');
+        document.getElementById('currentTimeEDF').textContent = "0";
+        document.getElementById('currentTimeRMS').textContent = "0";
+        
+        // Animate through the hyperperiod
+        animationInterval = setInterval(() => {
+            currentAnimationTime += 1;
+            
+            if (currentAnimationTime > hyperperiod) {
+                currentAnimationTime = 0; // Loop back
+            }
+            
+            drawPieChart(edfEvents, currentAnimationTime, 'pieChartEDF');
+            drawPieChart(rmsEvents, currentAnimationTime, 'pieChartRMS');
+            drawBarChart(edfEvents, currentAnimationTime, 'barChartEDF');
+            drawBarChart(rmsEvents, currentAnimationTime, 'barChartRMS');
+            document.getElementById('currentTimeEDF').textContent = currentAnimationTime;
+            document.getElementById('currentTimeRMS').textContent = currentAnimationTime;
+        }, 1000); // Update every second
+    }
 </script>
 
   
