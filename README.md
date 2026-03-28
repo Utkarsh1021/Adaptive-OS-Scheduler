@@ -358,8 +358,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions, suggestions, or feedback:
 
-- **GitHub Issues**: [Create an issue](https://github.com/anjali11s/OsProject/issues)
-- **Live Demo**: [https://anjali11s.github.io/OsProject/](https://anjali11s.github.io/OsProject/)
+- **GitHub Issues**: [Create an issue](https://adaptive-os-scheduler-one.vercel.app/issues)
+- **Live Demo**: [Adaptive-Os-Scheduler](https://adaptive-os-scheduler-one.vercel.app/)
 
 ---
 
