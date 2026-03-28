@@ -1,6 +1,6 @@
 # Adaptive OS Scheduler for Real-Time Systems
 
-[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://anjali11s.github.io/OsProject/)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://adaptive-os-scheduler-one.vercel.app/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
@@ -139,9 +139,8 @@ Side-by-side visualization of EDF vs RMS:
 
 ### Installation
 
-1. **Clone the repository**
+1. **Make folder and the repository**
    ```bash
-   git clone https://github.com/anjali11s/OsProject.git
    cd OsProject
    ```
 
@@ -155,7 +154,7 @@ Side-by-side visualization of EDF vs RMS:
 
 3. **Access the live demo**
    
-   Visit: [https://anjali11s.github.io/OsProject/](https://anjali11s.github.io/OsProject/)
+   Visit: [https://adaptive-os-scheduler-one.vercel.app/](https://adaptive-os-scheduler-one.vercel.app/)
 
 ## 📖 Usage Guide
 
